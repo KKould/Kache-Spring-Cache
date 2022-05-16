@@ -4,9 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import com.kould.annotation.CacheEntity;
 import com.kould.api.Kache;
 import com.kould.properties.SpringDaoProperties;
-import com.kould.properties.SpringDataFieldProperties;
-import com.kould.properties.SpringInterprocessCacheProperties;
-import com.kould.properties.SpringListenerProperties;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,24 +26,11 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
     private SpringDaoProperties daoProperties;
 
     @Autowired
-    private SpringDataFieldProperties dataFieldProperties;
-
-    @Autowired
-    private SpringInterprocessCacheProperties interprocessCacheProperties;
-
-    @Autowired
-    private SpringListenerProperties listenerProperties;
+    private Kache kache;
 
     private String methodPackage = daoProperties.getMapperPackage();
 
     private Set<String> mapperNames;
-
-    private final Kache kache = Kache.builder()
-            .daoProperties(daoProperties)
-            .dataFieldProperties(dataFieldProperties)
-            .interprocessCacheProperties(interprocessCacheProperties)
-            .listenerProperties(listenerProperties)
-            .build();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
