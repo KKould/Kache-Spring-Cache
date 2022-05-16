@@ -46,6 +46,23 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
             <version>${spring.ver}</version>
         </dependency>
+
+<!--        暂时依赖-->
+        <dependency>
+            <groupId>com.kould.test</groupId>
+            <artifactId>Kache</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>5.2.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>4.1.14</version>
+        </dependency>
     </dependencies>
 
     <build>

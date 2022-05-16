@@ -18,9 +18,9 @@ import java.util.Set;
 
 public class KacheProxyProcessor implements ApplicationContextAware, BeanPostProcessor, InitializingBean, DisposableBean {
 
-    private static final String MAPPER_PACKAGE_PATH_EXCEPTION = "Kache:Mapper's package path is wrong!!!";
+    private static final String MAPPER_PACKAGE_PATH_EXCEPTION = "Kache: Mapper's package path is wrong!!!";
 
-    private static final String ANNOTATION_ENTITY_CLASS_NULL_EXCEPTION = "Kache:@CacheEntity.value is null!!!";
+    private static final String ANNOTATION_ENTITY_CLASS_NULL_EXCEPTION = "Kache: @CacheEntity.value is null!!!";
 
     @Autowired
     private SpringDaoProperties daoProperties;
@@ -28,7 +28,7 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
     @Autowired
     private Kache kache;
 
-    private String methodPackage = daoProperties.getMapperPackage();
+    private String methodPackage;
 
     private Set<String> mapperNames;
 
@@ -62,6 +62,9 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        if (methodPackage == null) {
+            methodPackage = daoProperties.getMapperPackage();
+        }
         kache.init();
     }
 

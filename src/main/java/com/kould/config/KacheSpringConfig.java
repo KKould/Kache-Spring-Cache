@@ -59,6 +59,7 @@ public class KacheSpringConfig {
 
 
     @Bean
+    @ConditionalOnMissingBean
     public KacheProxyProcessor kacheProxyProcessor() {
         return new KacheProxyProcessor();
     }
