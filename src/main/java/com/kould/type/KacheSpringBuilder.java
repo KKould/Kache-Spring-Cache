@@ -3,7 +3,6 @@ package com.kould.type;
 import com.kould.api.Kache;
 import com.kould.core.CacheHandler;
 import com.kould.encoder.CacheEncoder;
-import com.kould.lock.KacheLock;
 import com.kould.manager.IBaseCacheManager;
 import com.kould.manager.InterprocessCacheManager;
 import com.kould.manager.RemoteCacheManager;
@@ -21,9 +20,6 @@ public class KacheSpringBuilder extends Kache.Builder {
 
     @Autowired
     private CacheEncoder cacheEncoder;
-
-    @Autowired
-    private KacheLock kacheLock;
 
     @Autowired
     private CacheHandler cacheHandler;
@@ -60,9 +56,6 @@ public class KacheSpringBuilder extends Kache.Builder {
 
     @Autowired
     private Strategy strategy;
-
-    public KacheSpringBuilder() {
-    }
 
     @Override
     public Kache build() {

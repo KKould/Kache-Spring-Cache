@@ -1,9 +1,7 @@
 package com.kould.processor;
 
-import cn.hutool.core.util.StrUtil;
 import com.kould.annotation.CacheEntity;
 import com.kould.api.Kache;
-import com.kould.properties.SpringDaoProperties;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -13,43 +11,39 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class KacheProxyProcessor implements ApplicationContextAware, BeanPostProcessor, InitializingBean, DisposableBean {
 
-    private static final String MAPPER_PACKAGE_PATH_EXCEPTION = "Kache: Mapper's package path is wrong!!!";
+    private static final String INTERFACE_NOT_FOUND_EXCEPTION = "Kache: This bean's interfaces haven't @CacheEntity?";
 
     private static final String ANNOTATION_ENTITY_CLASS_NULL_EXCEPTION = "Kache: @CacheEntity.value is null!!!";
 
     @Autowired
-    private SpringDaoProperties daoProperties;
-
-    @Autowired
     private Kache kache;
 
-    private String methodPackage;
-
-    private Set<String> mapperNames;
+    private Set<String> nameSet;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        mapperNames = new HashSet<>(Arrays.asList(applicationContext.getBeanNamesForAnnotation(CacheEntity.class)));
+        nameSet = Arrays.stream(applicationContext.getBeanNamesForAnnotation(CacheEntity.class))
+                .collect(Collectors.toSet());
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (mapperNames.contains(beanName)) {
+        if (nameSet.contains(beanName)) {
             try {
-                Class<?> interfaceClass = Class.forName(
-                        methodPackage + "." + StrUtil.upperFirst(beanName));
+                Class<?> interfaceClass = getTargetAnnotation(bean.getClass().getInterfaces());
                 Class<?> entityClass = interfaceClass.getDeclaredAnnotation(CacheEntity.class).value();
                 if (entityClass == null) {
                     throw new KacheBeansException(ANNOTATION_ENTITY_CLASS_NULL_EXCEPTION);
                 }
                 return kache.getProxy(bean, entityClass);
-            } catch (ClassNotFoundException e) {
-                throw new KacheBeansException(MAPPER_PACKAGE_PATH_EXCEPTION);
+            } catch (KacheBeansException e) {
+                e.printStackTrace();
+                throw e;
             }
         }
         return bean;
@@ -62,9 +56,6 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (methodPackage == null) {
-            methodPackage = daoProperties.getMapperPackage();
-        }
         kache.init();
     }
 
@@ -74,7 +65,12 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
         }
     }
 
-    public void setMethodPackage(String methodPackage) {
-        this.methodPackage = methodPackage;
+    private Class<?> getTargetAnnotation(Class<?>[] interFaces) {
+        for (Class<?> interFace : interFaces) {
+            if (interFace.isAnnotationPresent(CacheEntity.class)) {
+                return interFace;
+            }
+        }
+        throw new KacheBeansException(INTERFACE_NOT_FOUND_EXCEPTION);
     }
 }

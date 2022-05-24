@@ -6,8 +6,6 @@ import com.kould.core.CacheHandler;
 import com.kould.core.impl.BaseCacheHandler;
 import com.kould.encoder.CacheEncoder;
 import com.kould.encoder.impl.BaseCacheEncoder;
-import com.kould.lock.KacheLock;
-import com.kould.lock.impl.LocalLock;
 import com.kould.manager.IBaseCacheManager;
 import com.kould.manager.InterprocessCacheManager;
 import com.kould.manager.RemoteCacheManager;
@@ -46,9 +44,6 @@ public class KacheSpringConfig {
     private CacheEncoder cacheEncoder;
 
     @Autowired
-    private KacheLock kacheLock;
-
-    @Autowired
     private SpringDaoProperties daoProperties;
 
     @Autowired
@@ -82,12 +77,6 @@ public class KacheSpringConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public KacheLock kacheLock() {
-        return new LocalLock();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
     public CacheHandler cacheHandler() {
         return new BaseCacheHandler();
     }
@@ -114,14 +103,14 @@ public class KacheSpringConfig {
     @ConditionalOnMissingBean
     public RemoteCacheManager remoteCacheManager(RedisService redisService) {
         return new RedisCacheManager(dataFieldProperties, daoProperties
-                , redisService, kacheLock, cacheEncoder);
+                , redisService, cacheEncoder);
     }
 
     @Bean
     @ConditionalOnMissingBean
     public IBaseCacheManager iBaseCacheManager(InterprocessCacheManager interprocessCacheManager, RemoteCacheManager remoteCacheManager) {
         return new BaseCacheManagerImpl(interprocessCacheManager
-                , remoteCacheManager, interprocessCacheProperties,kacheLock,cacheEncoder,dataFieldProperties);
+                , remoteCacheManager, interprocessCacheProperties, cacheEncoder, dataFieldProperties);
     }
 
     @Bean
