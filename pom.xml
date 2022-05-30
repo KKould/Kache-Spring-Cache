@@ -6,7 +6,7 @@
 
     <groupId>io.gitee.kould</groupId>
     <artifactId>Kache-Spring</artifactId>
-    <version>1.7.9</version>
+    <version>1.0.0.INFORMAL_VERSION</version>
     <packaging>jar</packaging>
 
     <name>Kache-Spring</name>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>io.gitee.kould</groupId>
             <artifactId>Kache</artifactId>
-            <version>1.8.2.INFORMAL_VERSION</version>
+            <version>1.8.5.INFORMAL_VERSION</version>
         </dependency>
     </dependencies>
 

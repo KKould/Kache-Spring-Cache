@@ -4,14 +4,13 @@ import com.kould.annotation.CacheEntity;
 import com.kould.api.Kache;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class KacheProxyProcessor implements ApplicationContextAware, BeanPostProcessor, InitializingBean, DisposableBean {
@@ -20,13 +19,19 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
 
     private static final String ANNOTATION_ENTITY_CLASS_NULL_EXCEPTION = "Kache: @CacheEntity.value is null!!!";
 
-    @Autowired
-    private Kache kache;
+    private final Kache kache;
 
     private Set<String> nameSet;
 
+    private ApplicationContext context;
+
+    public KacheProxyProcessor(Kache kache) {
+        this.kache = kache;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        context = applicationContext;
         nameSet = Arrays.stream(applicationContext.getBeanNamesForAnnotation(CacheEntity.class))
                 .collect(Collectors.toSet());
     }
@@ -34,17 +39,13 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (nameSet.contains(beanName)) {
-            try {
-                Class<?> interfaceClass = getTargetAnnotation(bean.getClass().getInterfaces());
-                Class<?> entityClass = interfaceClass.getDeclaredAnnotation(CacheEntity.class).value();
-                if (entityClass == null) {
-                    throw new KacheBeansException(ANNOTATION_ENTITY_CLASS_NULL_EXCEPTION);
-                }
-                return kache.getProxy(bean, entityClass);
-            } catch (KacheBeansException e) {
-                e.printStackTrace();
-                throw e;
+            Class<?> beanType = ((FactoryBean<?>) context.getBean("&" + beanName)).getObjectType();
+            assert beanType != null;
+            Class<?> entityClass = getEntityClassForClass(beanType);
+            if (entityClass == null) {
+                throw new KacheBeansException(ANNOTATION_ENTITY_CLASS_NULL_EXCEPTION);
             }
+            return kache.getProxy(bean, entityClass);
         }
         return bean;
     }
@@ -65,11 +66,15 @@ public class KacheProxyProcessor implements ApplicationContextAware, BeanPostPro
         }
     }
 
-    private Class<?> getTargetAnnotation(Class<?>[] interFaces) {
-        for (Class<?> interFace : interFaces) {
-            if (interFace.isAnnotationPresent(CacheEntity.class)) {
-                return interFace;
-            }
+    /**
+     * 通过Mapper的Class进行@CacheEntity的判定并获取其中的Entity类型
+     * 若无数据则抛出KacheBeanException
+     * @param clazz Mapper的Class
+     * @return Mapper对应的
+     */
+    private Class<?> getEntityClassForClass(Class<?> clazz) throws KacheBeansException{
+        if (clazz != null && clazz.isAnnotationPresent(CacheEntity.class)) {
+            return clazz.getDeclaredAnnotation(CacheEntity.class).value();
         }
         throw new KacheBeansException(INTERFACE_NOT_FOUND_EXCEPTION);
     }
