@@ -50,7 +50,7 @@
         <dependency>
             <groupId>io.gitee.kould</groupId>
             <artifactId>Kache</artifactId>
-            <version>1.8.5.INFORMAL_VERSION</version>
+            <version>1.8.6.INFORMAL_VERSION</version>
         </dependency>
     </dependencies>
 

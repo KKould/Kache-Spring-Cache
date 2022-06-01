@@ -26,11 +26,11 @@ public class KacheSpringBuilder extends Kache.Builder {
     @Override
     public Kache build() {
         return Kache.builder()
-                .daoProperties(daoProperties)
-                .dataFieldProperties(dataFieldProperties)
-                .interprocessCacheProperties(interprocessCacheProperties)
-                .listenerProperties(listenerProperties)
-                .keyProperties(keyProperties)
+                .load(DaoProperties.class, daoProperties)
+                .load(DataFieldProperties.class, dataFieldProperties)
+                .load(InterprocessCacheProperties.class, interprocessCacheProperties)
+                .load(ListenerProperties.class, listenerProperties)
+                .load(KeyProperties.class, keyProperties)
                 .build();
     }
 }
